@@ -9,6 +9,7 @@ import ArticleForm from './ArticleForm'
 import Spinner from './Spinner'
 import axiosWithAuth from '../axios'
 
+
 const articlesUrl = 'http://localhost:9000/api/articles'
 const loginUrl = 'http://localhost:9000/api/login'
 
@@ -35,7 +36,9 @@ export default function App() {
     // and a message saying "Goodbye!" should be set in its proper state.
     // In any case, we should redirect the browser back to the login screen,
     // using the helper above.
-    
+    window.localStorage.removeItem("token") 
+    setMessage("Goodbye!")
+    redirectToLogin()
   }
 
   const login = ({ username, password }) => {
@@ -78,8 +81,9 @@ export default function App() {
       setArticles(res.data.articles)
     })
     .catch(err => {
-      console.log(err)
+      err.resp.status === 401 ? 
       redirectToLogin()
+      : setMessage(err.res.data.message)
     })
     .finally( () => {
       setSpinnerOn(false)
@@ -95,12 +99,15 @@ export default function App() {
     //* post w new state 
   }
 
-  const editArticle = article => {
+  const updateArticle = ({ article_id, article }) => {
     setSpinnerOn(true)
 
-    const { article_id, ...changes } = article
     axiosWithAuth()
-    .put(`http://localhost:9000/api/articles/${article_id}`, changes)
+    .put(`${articlesUrl}/${article_id}`, {
+      title: article.title,
+      text: article.text,
+      topic: article.topic
+    })
       .then(res => {
         setArticles(articles.map( art => {
           return art.article_id === article_id ? 
@@ -118,9 +125,6 @@ export default function App() {
       })
   }
 
-  const updateArticle = article_id => {
-   setCurrentArticleId(article_id)
-  }
 
   const deleteArticle = article_id => {
     // ✨ implement
@@ -133,15 +137,21 @@ export default function App() {
   return (
     // ✨ fix the JSX: `Spinner`, `Message`, `LoginForm`, `ArticleForm` and `Articles` expect props ❗
     <React.StrictMode>
-      <Spinner on={ true }/>
+
+      <Spinner on={ spinnerOn }/>
+
       <Message message={ message }/>
+
       <button id="logout" onClick={logout}>Logout from app</button>
+      
       <div id="wrapper" style={{ opacity: spinnerOn ? "0.25" : "1" }}> {/* <-- do not change this line */}
         <h1>Advanced Web Applications</h1>
+
         <nav>
           <NavLink id="loginScreen" to="/">Login</NavLink>
           <NavLink id="articlesScreen" to="/articles">Articles</NavLink>
         </nav>
+
         <Routes>
           <Route path="/" element={<LoginForm login={ login } />} />
           <Route path="articles" element={
@@ -149,9 +159,9 @@ export default function App() {
               <ArticleForm submit={ submitEdit }/>
               <Articles
                  getArticles={ getArticles }
-                 articles={ articles } 
-                 updateArticle={ updateArticle }
+                 articles={ articles }
                  deleteArticle={ deleteArticle }
+                 setCurrentArticleId={ setCurrentArticleId }
               />
             </>
           } />
