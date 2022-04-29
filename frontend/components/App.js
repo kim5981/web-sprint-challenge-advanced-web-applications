@@ -44,7 +44,6 @@ export default function App() {
     // On success, we should set the token to local storage in a 'token' key,
     // put the server success message in its proper state, and redirect
     // to the Articles screen. Don't forget to turn off the spinner!
-    setSpinnerOn(true)
     axios.post(loginUrl, { username, password })
     .then( res => {
       setSpinnerOn(false)
@@ -118,7 +117,7 @@ export default function App() {
           <Route path="articles" element={
             <>
               <ArticleForm />
-              <Articles getArticles={ getArticles } />
+              <Articles getArticles={ getArticles } articles={ articles } />
             </>
           } />
         </Routes>
