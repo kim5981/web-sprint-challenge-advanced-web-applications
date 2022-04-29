@@ -19,15 +19,13 @@ export default function App() {
   // ✨ MVP can be achieved with these states
   const [message, setMessage] = useState('')
   const [articles, setArticles] = useState([])
-  const [currentArticleId, setCurrentArticleId] = useState()
+  const [currentArticleId, setCurrentArticleId] = useState(null)
   const [spinnerOn, setSpinnerOn] = useState(false)
 
   const navigate = useNavigate()
 
-  const redirectToLogin = () => {
-  navigate("/")
-}
-  const redirectToArticles = () => { /* ✨ implement */ }
+  const redirectToLogin = () => navigate("/") 
+  const redirectToArticles = () => navigate("/articles") 
 
 
   const logout = () => {
@@ -92,22 +90,27 @@ export default function App() {
   }
 
   const postArticle = article => {
-    // ✨ implement
-    // The flow is very similar to the `getArticles` function.
-    // You'll know what to do! Use log statements or breakpoints
-    // to inspect the response from the server.
-    //* post w new state 
-  }
-
-  const updateArticle = ({ article_id, article }) => {
     setSpinnerOn(true)
 
+    axiosWithAuth.post(articlesUrl, article)
+      .then(res => {
+        setArticles([...articles, res.data.article])
+      })
+      .catch(err => {
+        console.log(err)
+        setSpinnerOn(false)
+        setMessage(err.response.data.message)
+      })
+      .finally( () => {
+        setSpinnerOn(false)
+      })
+  }
+
+  const editArticle = article => {
+    setSpinnerOn(true)
+    const { article_id, ...changes } = article
     axiosWithAuth()
-    .put(`${articlesUrl}/${article_id}`, {
-      title: article.title,
-      text: article.text,
-      topic: article.topic
-    })
+    .put(`${articlesUrl}/${article_id}`, changes)
       .then(res => {
         setArticles(articles.map( art => {
           return art.article_id === article_id ? 
@@ -118,11 +121,16 @@ export default function App() {
         setCurrentArticleId(null)
       })
       .catch(err => {
-        console.log(err)
+        setMessage(err?.response?.data.message)
+        // if err message exists display it
       })
       .finally( () => {
         setSpinnerOn(false)
       })
+  }
+
+  const updateArticle = article_id => {
+    setCurrentArticleId(article_id)
   }
 
 
@@ -130,7 +138,7 @@ export default function App() {
     // ✨ implement
   }
 
-  const submitEdit = article => {
+  const submit = article => {
     currentArticleId ? editArticle(article) : postArticle(article)
   }
   
@@ -156,12 +164,18 @@ export default function App() {
           <Route path="/" element={<LoginForm login={ login } />} />
           <Route path="articles" element={
             <>
-              <ArticleForm submit={ submitEdit }/>
+              <ArticleForm
+                submit={ submit }
+                currentArticleId={ currentArticleId }
+                article={ articles.find( article => {
+                  article.article_id === currentArticleId
+                }) }
+              />
               <Articles
                  getArticles={ getArticles }
                  articles={ articles }
                  deleteArticle={ deleteArticle }
-                 setCurrentArticleId={ setCurrentArticleId }
+                 updateArticle={ updateArticle }
               />
             </>
           } />

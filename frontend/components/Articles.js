@@ -5,10 +5,10 @@ import PT from 'prop-types'
 
 export default function Articles(props) {
   const {
-     getArticles,
      articles,
+     getArticles,
      deleteArticle,
-     setCurrentArticleId,
+     updateArticle,
      
   } = props
 
@@ -39,8 +39,8 @@ export default function Articles(props) {
                     <p>Topic: {art.topic}</p>
                   </div>
                   <div>
-                    <button disabled={false} onClick={ evt => setCurrentArticleId(art.article_id) }>Edit</button>
-                    <button disabled={false} onClick={ evt => deleteArticle }>Delete</button>
+                    <button disabled={false} onClick={ evt => updateArticle(art.article_id) }>Edit</button>
+                    <button disabled={false} onClick={ evt => deleteArticle(art.article_id) }>Delete</button>
                   </div>
                 </div>
               )
