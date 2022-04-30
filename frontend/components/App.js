@@ -80,7 +80,8 @@ export default function App() {
   // for Create page
   const postArticle = article => {
     
-    axiosWithAuth.post(articlesUrl, article)
+    axiosWithAuth()
+    .post(articlesUrl, article)
       .then(res => {
         setArticles([...articles, res.data.article])
         setMessage(res.data.message)
