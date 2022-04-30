@@ -29,11 +29,6 @@ export default function App() {
 
 
   const logout = () => {
-    // ✨ implement
-    // If a token is in local storage it should be removed,
-    // and a message saying "Goodbye!" should be set in its proper state.
-    // In any case, we should redirect the browser back to the login screen,
-    // using the helper above.
     window.localStorage.removeItem("token") 
     setMessage("Goodbye!")
     redirectToLogin()
@@ -64,14 +59,7 @@ export default function App() {
   }
 
   const getArticles = () => {
-    // ✨ implement
-    // We should flush the message state, turn on the spinner
-    // and launch an authenticated request to the proper endpoint.
-    // On success, we should set the articles in their proper state and
-    // put the server success message in its proper state.
-    // If something goes wrong, check the status of the response:
-    // if it's a 401 the token might have gone bad, and we should redirect to login.
-    // Don't forget to turn off the spinner!
+
     setSpinnerOn(true)
     axiosWithAuth().get(articlesUrl)
     .then(res=> {
@@ -89,28 +77,30 @@ export default function App() {
 
   }
 
+  // for Create page
   const postArticle = article => {
-    setSpinnerOn(true)
-
+    
     axiosWithAuth.post(articlesUrl, article)
       .then(res => {
         setArticles([...articles, res.data.article])
+        setMessage(res.data.message)
       })
       .catch(err => {
-        console.log(err)
-        setSpinnerOn(false)
         setMessage(err.response.data.message)
       })
-      .finally( () => {
-        setSpinnerOn(false)
-      })
+  
   }
 
-  const editArticle = article => {
+  // for edit page
+  const editArticle = ({ article_id, article }) => {
     setSpinnerOn(true)
-    const { article_id, ...changes } = article
+  
     axiosWithAuth()
-    .put(`${articlesUrl}/${article_id}`, changes)
+    .put(`${articlesUrl}/${article_id}`, {
+      title: article.title,
+      text: article.text,
+      topic: article.topic
+    })
       .then(res => {
         setArticles(articles.map( art => {
           return art.article_id === article_id ? 
@@ -135,12 +125,26 @@ export default function App() {
 
 
   const deleteArticle = article_id => {
-    // ✨ implement
+
+    setSpinnerOn(true)
+
+    axiosWithAuth()
+    .delete(`${articlesUrl}/${article_id}`)
+    .then(res => {
+      setMessage(res.data.message)
+      setArticles(articles.filter( article => {
+        return article.article_id !== article_id
+      }))
+    })
+    .catch(err => {
+      setMessage(err?.response?.data?.message)
+    })
+    .finally( () => {
+      setSpinnerOn(false)
+    })
   }
 
-  const submit = article => {
-    currentArticleId ? editArticle(article) : postArticle(article)
-  }
+ 
   
   return (
     // ✨ fix the JSX: `Spinner`, `Message`, `LoginForm`, `ArticleForm` and `Articles` expect props ❗
@@ -165,7 +169,8 @@ export default function App() {
           <Route path="articles" element={
             <>
               <ArticleForm
-                submit={ submit }
+                postArticle={ postArticle }
+                editArticle={ editArticle }
                 currentArticleId={ currentArticleId }
                 article={ articles.find( article => {
                   article.article_id === currentArticleId
