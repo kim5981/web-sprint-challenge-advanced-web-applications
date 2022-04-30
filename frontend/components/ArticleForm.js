@@ -9,6 +9,7 @@ export default function ArticleForm(props) {
   const {
     article,
     currentArticleId,
+    setCurrentArticleId,
     postArticle, 
     editArticle,
   } = props
@@ -29,11 +30,8 @@ export default function ArticleForm(props) {
 
   const onSubmit = evt => {
     evt.preventDefault()
-    if (article) {
-      editArticle({
-        article_id: article.article_id,
-        article: values
-      })
+    if (currentArticleId) {
+      editArticle(values)
     } else {
       postArticle(values)
     }

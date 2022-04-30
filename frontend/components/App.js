@@ -93,20 +93,17 @@ export default function App() {
   }
 
   // for edit page
-  const editArticle = ({ article_id, article }) => {
+  const editArticle = article => {
     setSpinnerOn(true)
   
+    const { article_id, ...changes } = article
     axiosWithAuth()
-    .put(`${articlesUrl}/${article_id}`, {
-      title: article.title,
-      text: article.text,
-      topic: article.topic
-    })
+    .put(`${articlesUrl}/${article_id}`, changes)
       .then(res => {
         setArticles(articles.map( art => {
-          return art.article_id === article_id ? 
-          res.data.article :
-          art
+          return art.article_id === article_id 
+          ? res.data.article 
+          : art
         }))
         setMessage(res.data.message)
         setCurrentArticleId(null)
@@ -120,11 +117,7 @@ export default function App() {
       })
   }
 
-  const updateArticle = article_id => {
-    setCurrentArticleId(article_id)
-  }
-
-
+ 
   const deleteArticle = article_id => {
 
     setSpinnerOn(true)
@@ -173,15 +166,13 @@ export default function App() {
                 postArticle={ postArticle }
                 editArticle={ editArticle }
                 currentArticleId={ currentArticleId }
-                article={ articles.find( article => {
-                  article.article_id === currentArticleId
-                }) }
+                article={ articles.find( article => article.article_id === currentArticleId )}
               />
               <Articles
                  getArticles={ getArticles }
                  articles={ articles }
                  deleteArticle={ deleteArticle }
-                 updateArticle={ updateArticle }
+                 setCurrentArticleId={ setCurrentArticleId }
               />
             </>
           } />
